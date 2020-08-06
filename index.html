@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/font-awesome.min.css">
 </head>
 
-<body>
+<body class="bg-light">
 
     <div class="container my-5">
         <div class="row">
@@ -28,10 +28,13 @@
 
                 <h5 class="mb-3">Posts</h5>
 
+                <!-- alert messages -->
+                <div id="dvMessage" class="alert d-none" role="alert"></div>
+
                 <!-- post form -->
                 <form id="frmPost" class="card mb-3 d-none">
                     <div class="card-body">
-                        <div id="dvMessage" class="alert d-none" role="alert"></div>
+                        <h5 id="frmTitle" class="card-title">Add Post</h5>
                         <div class="form-group">
                             <input type="text" name="txtTitle" id="txtTitle" class="form-control" placeholder="Enter title">
                         </div>
@@ -40,12 +43,10 @@
                                 placeholder="Enter body"></textarea>
                         </div>
                         <button id="btnSubmit" type="submit" class="btn btn-primary">Submit</button>
-                        <button id="btnCancel" type="button" class="btn btn-secondary">Cancel</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button id="btnCancel" type="button" class="btn btn-light">Cancel</button>
                     </div>
                 </form>
-
-                <!-- loader -->
-                <div class="spinner-border" role="status"></div>
             </div>
         </div>
 

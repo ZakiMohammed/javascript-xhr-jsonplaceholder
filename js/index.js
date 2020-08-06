@@ -1,7 +1,7 @@
 // ui elements
-const spinner = document.querySelector('.spinner-border');
 const dvList = document.querySelector('#dvList');
 const dvMessage = document.querySelector('#dvMessage');
+const frmTitle = document.querySelector('#frmTitle');
 const frmPost = document.querySelector('#frmPost');
 const btnAdd = document.querySelector('#btnAdd');
 const btnSubmit = document.querySelector('#btnSubmit');
@@ -11,8 +11,16 @@ const txtBody = document.querySelector('#txtBody');
 
 // declarations
 const apiUrl = 'https://jsonplaceholder.typicode.com/posts';
+const timeout = 1500;
+const messages = {
+    loading: 'Loading please wait...',
+    error: 'Server is not able to process your request.',
+    submit: 'Post created successfully',
+    update: 'Post updated successfully',
+    delete: 'Post deleted successfully'
+};
 let editId = 0;
-let count = 0;
+let incrementId = 0;
 
 // events
 window.addEventListener('load', onLoad);
@@ -22,9 +30,19 @@ btnCancel.addEventListener('click', onCancelClick);
 
 // handlers
 function onLoad() {
+
+    dvMessage.textContent = messages.loading;
+    dvMessage.className = 'alert alert-info';
+
     const xhr = new XMLHttpRequest();
     xhr.open('GET', apiUrl, true);
     xhr.onload = () => {
+        if (xhr.status !== 200) {
+            dvMessage.textContent = messages.error;
+            dvMessage.className = 'alert alert-danger';
+            return;
+        }
+
         const posts = JSON.parse(xhr.responseText);
         posts.forEach(post => {
             dvList.innerHTML += `
@@ -42,7 +60,11 @@ function onLoad() {
                 </div>
             `;
         });
-        spinner.classList.add('d-none');
+        dvMessage.className = 'alert d-none';
+    };
+    xhr.onerror = () => {
+        dvMessage.textContent = messages.error;
+        dvMessage.className = 'alert alert-danger';
     };
     xhr.send();
 }
@@ -61,10 +83,10 @@ function onSubmitClick(e) {
     }
 
     // message loading
-    dvMessage.textContent = 'Loading please wait';
+    dvMessage.textContent = messages.loading;
     dvMessage.className = 'alert alert-info';
 
-    // disable button
+    // disable buttons
     btnSubmit.setAttribute('disabled', true);
     btnCancel.setAttribute('disabled', true);
 
@@ -81,12 +103,18 @@ function onSubmitClick(e) {
         xhr.open('POST', apiUrl, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = () => {
+            if (xhr.status !== 201) {
+                dvMessage.textContent = messages.error;
+                dvMessage.className = 'alert alert-danger';
+                return;
+            }
+
             const post = JSON.parse(xhr.responseText);
-            dvMessage.textContent = 'Post created successfully';
+            dvMessage.textContent = messages.submit;
             dvMessage.className = 'alert alert-success';
 
             // increment post id in order to make them unique
-            post.id += count++;
+            post.id += incrementId++;
 
             dvList.innerHTML = `
                 <div class="col-sm-6 mb-3 post-${post.id}">
@@ -102,14 +130,11 @@ function onSubmitClick(e) {
                     </div>
                 </div>` + dvList.innerHTML;
 
-            setTimeout(() => {
-                frmPost.classList.add('d-none');
-                dvMessage.className = 'alert d-none';
-                txtTitle.value = '';
-                txtBody.value = '';
-                btnSubmit.removeAttribute('disabled');
-                btnCancel.removeAttribute('disabled');
-            }, 1500);
+            setTimeout(() => onCancelClick(), timeout);
+        };
+        xhr.onerror = () => {
+            dvMessage.textContent = messages.error;
+            dvMessage.className = 'alert alert-danger';
         };
         xhr.send(data);
     } else {
@@ -117,17 +142,23 @@ function onSubmitClick(e) {
         // edit post
 
         const data = JSON.stringify({
-            id: editId,
+            id: 1,
             title: txtTitle.value,
             body: txtBody.value,
             userId: 1
         });
         const xhr = new XMLHttpRequest();
-        xhr.open('PUT', `${apiUrl}/${editId}`, true);
+        xhr.open('PUT', `${apiUrl}/1`, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = () => {
+            if (xhr.status !== 200) {
+                dvMessage.textContent = messages.error;
+                dvMessage.className = 'alert alert-danger';
+                return;
+            }
+
             const post = JSON.parse(xhr.responseText);
-            dvMessage.textContent = 'Post updated successfully';
+            dvMessage.textContent = messages.update;
             dvMessage.className = 'alert alert-success';
 
             const title = document.querySelector(`.post-${editId} .card-title`);
@@ -135,27 +166,36 @@ function onSubmitClick(e) {
 
             title.textContent = post.title;
             body.textContent = post.body;
-    
-            setTimeout(() => {
-                frmPost.classList.add('d-none');
-                dvMessage.className = 'alert d-none';
-                txtTitle.value = '';
-                txtBody.value = '';
-                btnSubmit.removeAttribute('disabled');
-                btnCancel.removeAttribute('disabled');
-            }, 1500);
+
+            setTimeout(() => onCancelClick(), timeout);
+        };
+        xhr.onerror = () => {
+            dvMessage.textContent = messages.error;
+            dvMessage.className = 'alert alert-danger';
         };
         xhr.send(data);
     }
 }
 function onAddClick() {
     frmPost.classList.remove('d-none');
+    frmTitle.textContent = 'Add Post';
+    btnAdd.setAttribute('disabled', true);
+    document.querySelectorAll('.btn-edit, .btn-delete').forEach(element => {
+        element.setAttribute('disabled', true);
+    });
 }
 function onCancelClick() {
     frmPost.classList.add('d-none');
+    dvMessage.className = 'alert d-none';
     txtTitle.value = '';
     txtBody.value = '';
     editId = 0;
+    btnAdd.removeAttribute('disabled');
+    btnSubmit.removeAttribute('disabled');
+    btnCancel.removeAttribute('disabled');
+    document.querySelectorAll('.btn-edit, .btn-delete').forEach(element => {
+        element.removeAttribute('disabled');
+    });
 }
 function onEditClick(id) {
     const title = document.querySelector(`.post-${id} .card-title`).textContent;
@@ -166,6 +206,12 @@ function onEditClick(id) {
     txtBody.value = body;
 
     frmPost.classList.remove('d-none');
+    frmTitle.textContent = 'Edit Post';
+    btnAdd.setAttribute('disabled', true);
+    document.querySelectorAll('.btn-edit, .btn-delete').forEach(element => {
+        element.setAttribute('disabled', true);
+    });
+    scrollTo({ top: 0 });
 }
 function onDeleteClick(id) {
     const post = document.querySelector(`.post-${id}`);
@@ -173,5 +219,11 @@ function onDeleteClick(id) {
     const result = confirm(`Are you sure you want to delete "${title}"?`);
     if (result) {
         post.remove();
+        dvMessage.textContent = messages.delete;
+        dvMessage.className = 'alert alert-success';
+        setTimeout(() => {
+            dvMessage.textContent = '';
+            dvMessage.className = 'alert d-none';
+        }, timeout);
     }
 }
