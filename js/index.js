@@ -100,8 +100,6 @@ function onSubmitClick(e) {
             userId: 1
         });
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', apiUrl, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = () => {
             if (xhr.status !== 201) {
                 dvMessage.textContent = messages.error;
@@ -135,7 +133,11 @@ function onSubmitClick(e) {
         xhr.onerror = () => {
             dvMessage.textContent = messages.error;
             dvMessage.className = 'alert alert-danger';
+
+            onCancelClick();
         };
+        xhr.open('POST', apiUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(data);
     } else {
 
@@ -148,8 +150,6 @@ function onSubmitClick(e) {
             userId: 1
         });
         const xhr = new XMLHttpRequest();
-        xhr.open('PUT', `${apiUrl}/1`, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = () => {
             if (xhr.status !== 200) {
                 dvMessage.textContent = messages.error;
@@ -172,7 +172,11 @@ function onSubmitClick(e) {
         xhr.onerror = () => {
             dvMessage.textContent = messages.error;
             dvMessage.className = 'alert alert-danger';
+
+            onCancelClick();
         };
+        xhr.open('PUT', `${apiUrl}/1`, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(data);
     }
 }
@@ -218,12 +222,47 @@ function onDeleteClick(id) {
     const title = document.querySelector(`.post-${id} .card-title`).textContent;
     const result = confirm(`Are you sure you want to delete "${title}"?`);
     if (result) {
-        post.remove();
-        dvMessage.textContent = messages.delete;
-        dvMessage.className = 'alert alert-success';
-        setTimeout(() => {
-            dvMessage.textContent = '';
-            dvMessage.className = 'alert d-none';
-        }, timeout);
+        // message loading
+        dvMessage.textContent = messages.loading;
+        dvMessage.className = 'alert alert-info';
+
+        // disable all buttons
+        document.querySelectorAll('.btn-edit, .btn-delete').forEach(element => {
+            element.setAttribute('disabled', true);
+        });
+
+        const xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+            if (xhr.status !== 200) {
+                dvMessage.textContent = messages.error;
+                dvMessage.className = 'alert alert-danger';
+                return;
+            }
+
+            post.remove();
+            dvMessage.textContent = messages.delete;
+            dvMessage.className = 'alert alert-success';
+
+            // enable all buttons
+            document.querySelectorAll('.btn-edit, .btn-delete').forEach(element => {
+                element.removeAttribute('disabled');
+            });
+
+            setTimeout(() => {
+                dvMessage.textContent = '';
+                dvMessage.className = 'alert d-none';
+            }, timeout);
+        };
+        xhr.onerror = () => {
+            dvMessage.textContent = messages.error;
+            dvMessage.className = 'alert alert-danger';
+
+            // enable all buttons
+            document.querySelectorAll('.btn-edit, .btn-delete').forEach(element => {
+                element.removeAttribute('disabled');
+            });
+        };
+        xhr.open('DELETE', `${apiUrl}/${id}`, true);
+        xhr.send();
     }
 }
