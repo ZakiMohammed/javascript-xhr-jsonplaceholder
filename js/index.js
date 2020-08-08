@@ -100,6 +100,8 @@ function onSubmitClick(e) {
             userId: 1
         });
         const xhr = new XMLHttpRequest();
+        xhr.open('POST', apiUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = () => {
             if (xhr.status !== 201) {
                 dvMessage.textContent = messages.error;
@@ -136,8 +138,6 @@ function onSubmitClick(e) {
 
             onCancelClick();
         };
-        xhr.open('POST', apiUrl, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(data);
     } else {
 
@@ -150,6 +150,8 @@ function onSubmitClick(e) {
             userId: 1
         });
         const xhr = new XMLHttpRequest();
+        xhr.open('PUT', `${apiUrl}/1`, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = () => {
             if (xhr.status !== 200) {
                 dvMessage.textContent = messages.error;
@@ -175,8 +177,6 @@ function onSubmitClick(e) {
 
             onCancelClick();
         };
-        xhr.open('PUT', `${apiUrl}/1`, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(data);
     }
 }
@@ -232,6 +232,7 @@ function onDeleteClick(id) {
         });
 
         const xhr = new XMLHttpRequest();
+        xhr.open('DELETE', `${apiUrl}/${id}`, true);
         xhr.onload = () => {
             if (xhr.status !== 200) {
                 dvMessage.textContent = messages.error;
@@ -262,7 +263,6 @@ function onDeleteClick(id) {
                 element.removeAttribute('disabled');
             });
         };
-        xhr.open('DELETE', `${apiUrl}/${id}`, true);
         xhr.send();
     }
 }
